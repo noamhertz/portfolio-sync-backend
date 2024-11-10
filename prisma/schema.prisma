@@ -7,8 +7,101 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+model AssetHolder {
+  id          Int             @id @default(autoincrement())
+  name        String
+  type        AssetHolderType
+  stats       Json
+  isArchived  Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  description String?
+
+  assets Asset[] @relation("AssetHolderAssets")
+}
+
+model Asset {
+  id            Int       @id @default(autoincrement())
+  name          String
+  type          AssetType
+  currency      Currency
+  securityId    String
+  balance       Float
+  profit        Float
+  expenseRatio  Float
+  stats         Json
+  assetHolderId Int
+  isTaxable     Boolean
+  isArchived    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  assetHolder AssetHolder      @relation("AssetHolderAssets", fields: [assetHolderId], references: [id])
+  portfolios  AssetPortfolio[]
+}
+
+model Portfolio {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String?
+  category    PortfolioCategory
+  timeline    String?
+  isArchived  Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  assets AssetPortfolio[]
+}
+
+model AssetPortfolio {
+  id          Int        @id @default(autoincrement())
+  portfolioId Int
+  assetId     Int
+  weight      Float
+  weightType  WeightType
+
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id])
+  asset     Asset     @relation(fields: [assetId], references: [id])
+}
+
+enum WeightType {
+  PERCENTAGE
+  ABSOLUTE
+  REMAINING
+}
+
+enum PortfolioCategory {
+  EMERGENCY_FUND
+  SPECIFIC_GOAL
+  LONG_TERM
+  PENSION_SAVINGS
+}
+
+enum Currency {
+  ILS
+  USD
+  EUR
+}
+
+enum AssetHolderType {
+  BANK
+  BROKER
+  INVESTMENT_HOUSE
+  REAL_ESTATE
+  OTHER
+}
+
+enum AssetType {
+  CASH
+  BOND
+  STOCK
+  DEPOSIT
+  ETF
+  ESPP
+  RSU
+  PENSION_FUND
+  STUDY_FUND
+  PROVIDENT_FUND
+  APARTMENT
+  LOAN
 }
